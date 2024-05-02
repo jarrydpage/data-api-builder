@@ -43,7 +43,7 @@ namespace Azure.DataApiBuilder.Core.Resolvers
         public override IDictionary<string, DbConnectionStringBuilder> ConnectionStringBuilders
             => base.ConnectionStringBuilders;
 
-        public DefaultAzureCredential AzureCredential { get; set; } = new();
+        public DefaultAzureCredential AzureCredential { get; set; }
 
         /// <summary>
         /// The saved cached access token obtained from DefaultAzureCredentials
@@ -76,6 +76,12 @@ namespace Azure.DataApiBuilder.Core.Resolvers
             _dataSourceAccessTokenUsage = new Dictionary<string, bool>();
             _dataSourceToSessionContextUsage = new Dictionary<string, bool>();
             _accessTokensFromConfiguration = runtimeConfigProvider.ManagedIdentityAccessToken;
+
+            DefaultAzureCredentialOptions defaultCredentialOptions = new();
+            if (!string.IsNullOrEmpty(runtimeConfig.Runtime?.Identity?.ManagedIdentity)) {
+                defaultCredentialOptions.ManagedIdentityClientId = runtimeConfig.Runtime.Identity.ManagedIdentity;
+            }
+            AzureCredential = new(defaultCredentialOptions);
 
             foreach ((string dataSourceName, DataSource dataSource) in mssqldbs)
             {
